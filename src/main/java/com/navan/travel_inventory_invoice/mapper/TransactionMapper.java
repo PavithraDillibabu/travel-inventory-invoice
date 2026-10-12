@@ -16,12 +16,14 @@ import com.navan.travel_inventory_invoice.entity.transaction.TransactionFee;
 import com.navan.travel_inventory_invoice.entity.transaction.TransactionTax;
 import org.springframework.stereotype.Component;
 import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.ObjectMapper;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.OffsetDateTime;
 import java.util.UUID;
+import java.util.Map;
 
 /** Converts a validated create-transaction payload into its persistence entity graph. */
 @Component
@@ -110,21 +112,23 @@ public class TransactionMapper {
         return fee;
     }
 
-    private String serializeMetadata(TransactionRequestDto request) {
+    private Map<String, Object> serializeMetadata(TransactionRequestDto request) {
         try {
-            return objectMapper.writeValueAsString(request.metadata());
+            String json = objectMapper.writeValueAsString(request.metadata());
+            return objectMapper.readValue(json, new TypeReference<>() {});
         } catch (JacksonException e) {
             throw new IllegalArgumentException("Unable to serialize transaction metadata", e);
         }
     }
 
-    private TransactionMetadataDto deserializeMetadata(String type, String metadata) {
+    private TransactionMetadataDto deserializeMetadata(String type, Map<String, Object> metadata) {
         try {
+            String json = objectMapper.writeValueAsString(metadata);
             return switch (type) {
-                case "flight" -> objectMapper.readValue(metadata, FlightMetadataDto.class);
-                case "hotel" -> objectMapper.readValue(metadata, HotelMetadataDto.class);
-                case "rail" -> objectMapper.readValue(metadata, RailMetadataDto.class);
-                case "navan_fee" -> objectMapper.readValue(metadata, NavanFeeMetadataDto.class);
+                case "flight" -> objectMapper.readValue(json, FlightMetadataDto.class);
+                case "hotel" -> objectMapper.readValue(json, HotelMetadataDto.class);
+                case "rail" -> objectMapper.readValue(json, RailMetadataDto.class);
+                case "navan_fee" -> objectMapper.readValue(json, NavanFeeMetadataDto.class);
                 default -> throw new IllegalArgumentException("Unknown transaction type: " + type);
             };
         } catch (JacksonException e) {

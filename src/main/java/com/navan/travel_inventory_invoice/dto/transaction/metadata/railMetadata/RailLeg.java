@@ -10,7 +10,7 @@ public record RailLeg(
         @NotBlank String destination,
         @NotNull OffsetDateTime departure,
         @NotNull OffsetDateTime arrival,
-        @JsonProperty("train_number") @NotBlank String trainNumber,
-        @JsonProperty("class") @NotBlank String travelClass
+        @JsonProperty("train_number") String trainNumber,
+        @JsonProperty("class") String travelClass
 ) {
 }

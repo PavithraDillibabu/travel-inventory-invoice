@@ -21,7 +21,7 @@ $env:DB_USERNAME = "your-username"
 $env:DB_PASSWORD = "your-local-password"
 ```
 
-When the API starts, Spring Boot runs Flyway automatically using the configured `classpath:db/migration` location. Flyway applies `V1__create_tables.sql` and `V2__create_indexes.sql`, and records completed migrations in `flyway_schema_history`. The JPA setting `ddl-auto=validate` then checks that the schema matches the entities; Hibernate does not create the tables.
+When the API starts, Spring Boot runs Flyway automatically using the configured `classpath:db/migration` location. Flyway applies `V1__create_tables.sql`, `V2__create_indexes.sql`, and `V3__metadata_to_jsonb.sql`, and records completed migrations in `flyway_schema_history`. The JPA setting `ddl-auto=validate` then checks that the schema matches the entities; Hibernate does not create the tables. V3 converts transaction and invoice snapshot metadata from text to PostgreSQL `JSONB`.
 
 ## Run the API
 

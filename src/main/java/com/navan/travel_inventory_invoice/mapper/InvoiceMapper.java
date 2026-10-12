@@ -58,7 +58,7 @@ public class InvoiceMapper {
             line.setCurrency(transaction.getCurrency());
             line.setOccurredAt(transaction.getOccurredAt());
             line.setTotalMinor(transaction.getTotalMinor());
-            line.setMetadata(transaction.getMetadata());
+            line.setMetadata(new LinkedHashMap<>(transaction.getMetadata()));
 
             List<TaxLineDto> taxes = transaction.getTaxLines().stream()
                     .map(tax -> toTaxDto(tax, taxRollup)).toList();
@@ -137,13 +137,14 @@ public class InvoiceMapper {
         return new FeeLineDto(fee.getName(), toMoney(fee.getAmountMinor()));
     }
 
-    private TransactionMetadataDto readMetadata(String type, String value) {
+    private TransactionMetadataDto readMetadata(String type, Map<String, Object> value) {
         try {
+            String json = objectMapper.writeValueAsString(value);
             return switch (type) {
-                case "flight" -> objectMapper.readValue(value, FlightMetadataDto.class);
-                case "hotel" -> objectMapper.readValue(value, HotelMetadataDto.class);
-                case "rail" -> objectMapper.readValue(value, RailMetadataDto.class);
-                case "navan_fee" -> objectMapper.readValue(value, NavanFeeMetadataDto.class);
+                case "flight" -> objectMapper.readValue(json, FlightMetadataDto.class);
+                case "hotel" -> objectMapper.readValue(json, HotelMetadataDto.class);
+                case "rail" -> objectMapper.readValue(json, RailMetadataDto.class);
+                case "navan_fee" -> objectMapper.readValue(json, NavanFeeMetadataDto.class);
                 default -> throw new IllegalArgumentException("Unknown transaction type: " + type);
             };
         } catch (JacksonException e) {

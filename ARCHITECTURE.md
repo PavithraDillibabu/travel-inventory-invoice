@@ -8,7 +8,7 @@ Each transaction has a generated string UUID primary key and a client-supplied `
 
 Amounts are stored as integer minor units (`total_minor`, `amount_minor`) with a three-character currency code. Taxes and fees are distinct concepts and tables: `transaction_taxes` has name, optional decimal rate, and amount; `transaction_fees` has name and amount. Both reference their transaction. Invoice totals and summaries use corresponding `invoice_taxes` and `invoice_fees` tables.
 
-Travel-specific attributes use typed metadata DTOs serialized as JSON text in `transactions.metadata`; there are no separate relational tables for each travel type. Flight metadata contains origin/destination (OD), fare, and coupons; each coupon carries its flight number and segment details. Hotel metadata contains the hotel name, address, dates, room rate, and extras. Rail metadata contains an ordered list of legs. `navan_fee` metadata contains `fee_kind` (`trip_fee` or `agent_call_fee`), description, and optional related external ID. The transaction `type` selects which metadata DTO is read and written.
+Travel-specific attributes use typed metadata DTOs stored as PostgreSQL `JSONB` in `transactions.metadata`; invoice-line snapshots use the same JSONB representation. Hibernate maps these fields as JSON objects, and the transaction `type` selects the DTO used to validate and read/write the structure.
 
 ## Invoice snapshots
 

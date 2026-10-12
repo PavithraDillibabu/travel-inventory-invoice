@@ -12,10 +12,13 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.OffsetDateTime;
+import java.util.Map;
 
 @Entity
 @Getter
@@ -66,8 +69,9 @@ public class InvoiceLine {
     @Column(name = "total_minor", nullable = false)
     private Long totalMinor;
 
-    @Column(nullable = false, columnDefinition = "TEXT")
-    private String metadata;
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(nullable = false, columnDefinition = "jsonb")
+    private Map<String, Object> metadata;
 
     @Column(
             name = "tax_lines_snapshot",
