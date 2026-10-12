@@ -2,13 +2,15 @@ package com.navan.travel_inventory_invoice.dto.transaction.metadata.flightMetada
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.OffsetDateTime;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 public record FlightCoupon(
-        String carrier,
-        @JsonProperty("flight_number") String flightNumber,
-        String from,
-        String to,
-        OffsetDateTime departure,
-        OffsetDateTime arrival
+        @NotBlank String carrier,
+        @JsonProperty("flight_number") @NotBlank String flightNumber,
+        @NotBlank String from,
+        @NotBlank String to,
+        @NotNull OffsetDateTime departure,
+        @NotNull OffsetDateTime arrival
 ) {
 }

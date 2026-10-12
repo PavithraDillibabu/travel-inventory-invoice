@@ -95,6 +95,42 @@ class TransactionIntegrationTest {
     }
 
     @Test
+    void rejectsEmptyOrMismatchedMetadataAndUnknownTypesWithoutPersisting() throws Exception {
+        JsonNode flightWithRailMetadata = fixture("flight");
+        String railMismatchId = unique("flight-with-rail-metadata");
+        ((ObjectNode) flightWithRailMetadata).put("external_id", railMismatchId);
+        ((ObjectNode) flightWithRailMetadata).set("metadata", mapper.readTree("""
+                {"legs":[{"origin":"London","destination":"Paris","departure":"2026-03-11T09:00:00Z","arrival":"2026-03-11T12:00:00Z","train_number":"T1","class":"standard"}]}
+                """));
+        assertInvalidAndNotStored(flightWithRailMetadata, railMismatchId);
+
+        JsonNode emptyFlightMetadata = fixture("flight");
+        String emptyFlightId = unique("empty-flight-metadata");
+        ((ObjectNode) emptyFlightMetadata).put("external_id", emptyFlightId);
+        ((ObjectNode) emptyFlightMetadata).set("metadata", mapper.createObjectNode());
+        assertInvalidAndNotStored(emptyFlightMetadata, emptyFlightId);
+
+        JsonNode unknownType = fixture("flight");
+        String unknownTypeId = unique("unknown-type");
+        ((ObjectNode) unknownType).put("external_id", unknownTypeId);
+        ((ObjectNode) unknownType).put("type", "spaceship");
+        assertInvalidAndNotStored(unknownType, unknownTypeId);
+
+        JsonNode unknownFeeKind = fixture("trip_fee");
+        String unknownFeeId = unique("unknown-fee-kind");
+        ((ObjectNode) unknownFeeKind).put("external_id", unknownFeeId);
+        ((ObjectNode) unknownFeeKind.get("metadata")).put("fee_kind", "support_fee");
+        assertInvalidAndNotStored(unknownFeeKind, unknownFeeId);
+    }
+
+    private void assertInvalidAndNotStored(JsonNode payload, String externalId) throws Exception {
+        mvc.perform(post("/transactions").contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsBytes(payload)))
+                .andExpect(status().isBadRequest());
+        assertThat(transactionCount(externalId)).isZero();
+    }
+
+    @Test
     void overlappingCreatesWithSameExternalIdLeaveOneRow() throws Exception {
         JsonNode payload = fixture("flight");
         String externalId = unique("race");
